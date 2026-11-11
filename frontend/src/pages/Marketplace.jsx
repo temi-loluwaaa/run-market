@@ -8,6 +8,7 @@ export default function Marketplace() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOrder, setSortOrder] = useState('default');
   const [newItem, setNewItem] = useState({ title: '', description: '', price: '', category: 'Books', image_url: '' });
+  const [imagePreview, setImagePreview] = useState('');
   
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
@@ -30,6 +31,33 @@ export default function Marketplace() {
     fetchItems();
   }, []);
 
+  // Compress and convert selected/captured image to Base64
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800; // Resize large phone photos for fast database storage
+        const scaleSize = MAX_WIDTH / img.width;
+        canvas.width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
+        canvas.height = img.width > MAX_WIDTH ? img.height * scaleSize : img.height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        setImagePreview(compressedBase64);
+        setNewItem({ ...newItem, image_url: compressedBase64 });
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handlePostItem = async (e) => {
     e.preventDefault();
     if (!token) return alert('Please log in first.');
@@ -45,7 +73,10 @@ export default function Marketplace() {
 
     if (res.ok) {
       setNewItem({ title: '', description: '', price: '', category: 'Books', image_url: '' });
+      setImagePreview('');
       fetchItems();
+    } else {
+      alert('Failed to post item. Image might be too large.');
     }
   };
 
@@ -54,7 +85,6 @@ export default function Marketplace() {
     navigate('/login');
   };
 
-  // Filter & Sort Logic
   const filteredItems = items
     .filter((item) => {
       const matchesSearch =
@@ -169,13 +199,53 @@ export default function Marketplace() {
               <option value="Others">Others</option>
             </select>
           </div>
-          <input
-            type="url"
-            placeholder="Image URL (optional)"
-            className="w-full rounded border p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            value={newItem.image_url}
-            onChange={(e) => setNewItem({ ...newItem, image_url: e.target.value })}
-          />
+
+          {/* Camera & Gallery Upload Controls */}
+          <div className="space-y-2 pt-1">
+            <label className="block text-xs font-medium text-gray-600">Item Photo (Optional)</label>
+            <div className="flex gap-2">
+              {/* Camera Capture Button */}
+              <label className="flex-1 cursor-pointer rounded border border-blue-600 bg-blue-50 py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-100 transition">
+                📷 Take Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+
+              {/* Gallery Upload Button */}
+              <label className="flex-1 cursor-pointer rounded border border-gray-300 bg-gray-100 py-2 text-center text-xs font-semibold text-gray-700 hover:bg-gray-200 transition">
+                🖼️ Choose from Gallery
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Live Image Preview */}
+            {imagePreview && (
+              <div className="relative mt-2 inline-block">
+                <img src={imagePreview} alt="Preview" className="h-28 w-28 rounded object-cover border" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImagePreview('');
+                    setNewItem({ ...newItem, image_url: '' });
+                  }}
+                  className="absolute -top-2 -right-2 rounded-full bg-red-600 px-1.5 py-0.5 text-xs text-white font-bold shadow"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+
           <button type="submit" className="w-full rounded bg-green-600 py-2 text-sm font-bold text-white hover:bg-green-700 transition">
             Post Item
           </button>
