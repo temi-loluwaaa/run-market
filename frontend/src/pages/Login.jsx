@@ -8,7 +8,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   // Dynamic API URL definition
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_URL = import.meta.env.VITE_API_URL || '[https://run-market-api.onrender.com] (https://run-market-api.onrender.com)';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

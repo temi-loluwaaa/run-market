@@ -15,7 +15,7 @@ export default function Marketplace() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const defaultImage = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&auto=format&fit=crop&q=60';
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_URL = import.meta.env.VITE_API_URL || '[https://run-market-api.onrender.com] (https://run-market-api.onrender.com)';
 
   const fetchItems = async () => {
     try {
