@@ -17,19 +17,22 @@ async function initDatabase() {
     const connection = await pool.getConnection();
     console.log('Connected to Filess.io MySQL database!');
 
+    await connection.query(`DROP TABLE IF EXISTS items`);
+    await connection.query(`DROP TABLE IF EXISTS users`);
+
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS users (
+      CREATE TABLE users (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        full_name VARCHAR(100) NOT NULL,
+        name VARCHAR(100) NOT NULL,
         email VARCHAR(100) NOT NULL UNIQUE,
-        whatsapp_number VARCHAR(20) NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
+        whatsapp VARCHAR(20) NOT NULL,
+        password VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS items (
+      CREATE TABLE items (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         title VARCHAR(150) NOT NULL,
@@ -43,7 +46,7 @@ async function initDatabase() {
       )
     `);
 
-    console.log('Database tables verified/created.');
+    console.log('Database tables recreated with matching columns.');
     connection.release();
   } catch (err) {
     console.error('Database initialization error:', err);
