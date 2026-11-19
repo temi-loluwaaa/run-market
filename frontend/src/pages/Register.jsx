@@ -7,8 +7,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   // Dynamic API URL definition
-  const API_URL = import.meta.env.VITE_API_URL || '[https://run-market-api.onrender.com] (https://run-market-api.onrender.com)';
-
+ const API_URL = import.meta.env.VITE_API_URL || 'https://run-market-api.onrender.com';
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
